@@ -1,0 +1,14 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.idea/
+
+## Secrets
+appsettings.Development.json
+
+## Context files
+CONTEXT.md
+CONTEXT_COMPACT.md
