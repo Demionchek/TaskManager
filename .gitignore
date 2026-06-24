@@ -10,5 +10,4 @@ obj/
 appsettings.Development.json
 
 ## Context files
-CONTEXT.md
-CONTEXT_COMPACT.md
+*.md

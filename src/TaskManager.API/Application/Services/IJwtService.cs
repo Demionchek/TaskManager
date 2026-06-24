@@ -5,4 +5,5 @@ namespace TaskManager.API.Application.Services;
 public interface IJwtService
 {
     public string GenerateToken(User user);
+    public string GenerateRefreshToken();
 }
