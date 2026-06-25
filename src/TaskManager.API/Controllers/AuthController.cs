@@ -52,7 +52,13 @@ public class AuthController : ControllerBase
 
         bool verified = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
         if (!verified) return Unauthorized("Password doesn't match");
-        AuthResponse response = new AuthResponse(jwtService.GenerateToken(user), user.RefreshToken!, user.Username);
+        if (user.RefreshToken == null)
+        {
+            user.RefreshToken = jwtService.GenerateRefreshToken();
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+            await db.SaveChangesAsync();
+        }
+        AuthResponse response = new AuthResponse(jwtService.GenerateToken(user), user.RefreshToken, user.Username);
         return Ok(response);
     }
 

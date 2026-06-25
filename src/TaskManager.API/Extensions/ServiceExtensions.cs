@@ -28,6 +28,7 @@ public static class ServiceExtensions
                     ValidAudience = jwtSettings.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret))
                };
+               options.MapInboundClaims = false;
           });
           return services;
      }
