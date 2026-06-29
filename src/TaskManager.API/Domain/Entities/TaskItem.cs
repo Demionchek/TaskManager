@@ -1,3 +1,4 @@
+using TaskManager.API.Application.DTOs;
 using TaskManager.API.Domain.Enums;
 
 namespace TaskManager.API.Domain.Entities;
