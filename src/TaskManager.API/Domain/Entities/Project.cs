@@ -9,4 +9,5 @@ public class Project
     public Guid OwnerId { get; set; }
     public User? Owner { get; set; }
     public List<TaskItem> Tasks { get; set; } = [];
+    public List<ProjectMember> Members { get; set; } = [];
 }
