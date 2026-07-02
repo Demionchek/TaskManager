@@ -12,7 +12,7 @@ namespace TaskManager.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/projects/{projectId}/tasks/{taskId}/comments")]
-public class CommentsController : ControllerBase
+public class CommentsController : BaseController
 {
     private AppDbContext db;
     public CommentsController(AppDbContext db)
@@ -26,6 +26,7 @@ public class CommentsController : ControllerBase
         TaskItem? taskItem = await GetTaskAsync(projectId,taskId);
         if (taskItem == null)
             return NotFound();
+        if (!HasProjectAccess(taskItem.Project!, GetUserId())) return Forbid();
         List<CommentResponse> responses = taskItem.Comments.Select(t => new CommentResponse(t!)).ToList();
         return Ok(responses);
     }
@@ -36,6 +37,7 @@ public class CommentsController : ControllerBase
         TaskItem? taskItem = await GetTaskAsync(projectId,taskId);
         if (taskItem == null)
             return NotFound();
+        if (!HasProjectAccess(taskItem.Project!, GetUserId())) return Forbid();
         var comment = new Comment
         {
             Id = Guid.NewGuid(),
@@ -55,6 +57,7 @@ public class CommentsController : ControllerBase
         TaskItem? taskItem = await GetTaskAsync(projectId,taskId);
         if (taskItem == null)
             return NotFound();
+        if (!HasProjectAccess(taskItem.Project!, GetUserId())) return Forbid();
         Comment? comment = await db.Comments.FirstOrDefaultAsync(t => t.Id == commentId && t.TaskItemId == taskItem.Id);
         if (comment == null) return NotFound();
         if (comment.AuthorId != GetUserId()) return Forbid();
@@ -69,6 +72,7 @@ public class CommentsController : ControllerBase
         TaskItem? taskItem = await GetTaskAsync(projectId,taskId);
         if (taskItem == null)
             return NotFound();
+        if (!HasProjectAccess(taskItem.Project!, GetUserId())) return Forbid();
         Comment? comment = await db.Comments.FirstOrDefaultAsync(t => t.Id == commentId && t.TaskItemId == taskItem.Id);
         if (comment == null) return NotFound();
         if (comment.AuthorId != GetUserId()) return Forbid();
@@ -80,8 +84,8 @@ public class CommentsController : ControllerBase
     private async Task<TaskItem?> GetTaskAsync(Guid projectId,Guid taskId)
     {
         return await db.Tasks.Include(t => t.Comments)
+                       .Include(t=> t.Project)
+                       .ThenInclude(p => p.Members)
                        .FirstOrDefaultAsync(t => t.Id == taskId &&  t.ProjectId == projectId);
     }
-
-    private Guid GetUserId() => Guid.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
 }

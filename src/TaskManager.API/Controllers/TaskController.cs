@@ -13,7 +13,7 @@ namespace TaskManager.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/projects/{projectId}/tasks")]
-public class TaskController : ControllerBase
+public class TaskController : BaseController
 {
     private AppDbContext db;
     public TaskController(AppDbContext db)
@@ -53,26 +53,13 @@ public class TaskController : ControllerBase
         return CreatedAtAction(nameof(Post),new {id = taskItem.Id},new TaskResponse(taskItem));
     }
 
-    private async Task MapTaskItemCreate(CreateTaskRequest request, TaskItem taskItem, Project project)
-    {
-        taskItem.Id = Guid.NewGuid();
-        taskItem.Title = request.Title;
-        taskItem.Description = request.Description;
-        taskItem.Priority = request.Priority;
-        taskItem.AssigneeId = request.AssigneeId;
-        taskItem.Status = StatusEnum.Todo;
-        taskItem.CreatedAt = DateTime.UtcNow;
-        taskItem.Assignee = await GetUserByGuid(taskItem.AssigneeId);
-        taskItem.Project = project;
-        taskItem.ProjectId = project.Id;
-    }
-
     [HttpPut("{taskId}")]
     public async Task<ActionResult> Put(Guid projectId, Guid taskId, UpdateTaskRequest request)
     {
         TaskItem? taskItem = await GetTaskItemAsync(projectId, taskId);
         if (taskItem == null)
             return NotFound();
+        if (!HasProjectAccess(taskItem.Project!, GetUserId())) return Forbid();
         taskItem.AssigneeId = request.AssigneeId;
         taskItem.Assignee = await GetUserByGuid(request.AssigneeId);
         taskItem.Status = request.Status;
@@ -89,29 +76,46 @@ public class TaskController : ControllerBase
         TaskItem? taskItem = await GetTaskItemAsync(projectId, taskId);
         if (taskItem == null)
             return NotFound();
+        if (!HasProjectAccess(taskItem.Project!, GetUserId())) return Forbid();
         taskItem.Project!.Tasks.Remove(taskItem);
         await db.SaveChangesAsync();
         return NoContent();
     }
 
+    private async Task MapTaskItemCreate(CreateTaskRequest request, TaskItem taskItem, Project project)
+    {
+        taskItem.Id = Guid.NewGuid();
+        taskItem.Title = request.Title;
+        taskItem.Description = request.Description;
+        taskItem.Priority = request.Priority;
+        taskItem.AssigneeId = request.AssigneeId;
+        taskItem.Status = StatusEnum.Todo;
+        taskItem.CreatedAt = DateTime.UtcNow;
+        taskItem.Assignee = await GetUserByGuid(taskItem.AssigneeId);
+        taskItem.Project = project;
+        taskItem.ProjectId = project.Id;
+    }
+
     private async Task<Project?> GetProjectAsync(Guid projectId)
     {
-        Project? project = await db.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
+        Project? project = await db.Projects.Include(p=> p.Members)
+                                   .FirstOrDefaultAsync(p => p.Id == projectId);
         var userId = GetUserId();
-        if (project == null || project.OwnerId != userId ) return null;
+        if (project == null || !HasProjectAccess(project, userId)) return null;
         return project;
     }
 
     private async Task<List<TaskItem>?> GetProjectTasksAsync(Guid projectId)
     {
         Project? project = await db.Projects.Include(p => p.Tasks)
+                                   .ThenInclude(t => t.Project)
+                                   .Include(p => p.Members)
                                    .FirstOrDefaultAsync(p => p.Id == projectId);
         var userId = GetUserId();
-        if (project == null || project.OwnerId != userId ) return null;
+        if (project == null || !HasProjectAccess(project, userId) ) return null;
         return project.Tasks;
     }
 
-    private Guid GetUserId() => Guid.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
 
     private async Task<TaskItem?> GetTaskItemAsync(Guid projectId, Guid taskId)
     {
