@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
-using TaskManager.API.Application.DTOs;
-using TaskManager.API.Application.Services;
-using TaskManager.API.Domain.Entities;
-using TaskManager.API.Infrastructure.Persistence;
+using TaskManager.Application.Services;
+using TaskManager.Domain.Entities;
+using TaskManager.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using LoginRequest = TaskManager.API.Application.DTOs.LoginRequest;
-using RefreshRequest = TaskManager.API.Application.DTOs.RefreshRequest;
-using RegisterRequest = TaskManager.API.Application.DTOs.RegisterRequest;
+using TaskManager.Application.DTOs;
+using LoginRequest = TaskManager.Application.DTOs.LoginRequest;
+using RefreshRequest = TaskManager.Application.DTOs.RefreshRequest;
+using RegisterRequest = TaskManager.Application.DTOs.RegisterRequest;
 
 namespace TaskManager.API.Controllers;
 [ApiController]

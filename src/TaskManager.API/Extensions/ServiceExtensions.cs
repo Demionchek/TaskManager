@@ -2,9 +2,10 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using TaskManager.API.Application.Services;
-using TaskManager.API.Application.Settings;
-using TaskManager.API.Infrastructure.Persistence;
+using TaskManager.Application.Services;
+using TaskManager.Application.Settings;
+using TaskManager.Infrastructure.Persistence;
+using TaskManager.Infrastructure.Services;
 
 namespace TaskManager.API.Extensions;
 

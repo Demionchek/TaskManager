@@ -1,11 +1,9 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
-using TaskManager.API.Application.DTOs;
-using TaskManager.API.Domain.Entities;
-using TaskManager.API.Infrastructure.Persistence;
+using TaskManager.Application.DTOs;
+using TaskManager.Domain.Entities;
+using TaskManager.Infrastructure.Persistence;
 
 namespace TaskManager.API.Controllers;
 
@@ -85,7 +83,7 @@ public class CommentsController : BaseController
     {
         return await db.Tasks.Include(t => t.Comments)
                        .Include(t=> t.Project)
-                       .ThenInclude(p => p.Members)
+                       .ThenInclude(p => p!.Members)
                        .FirstOrDefaultAsync(t => t.Id == taskId &&  t.ProjectId == projectId);
     }
 }

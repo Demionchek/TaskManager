@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
-using TaskManager.API.Domain.Entities;
+using TaskManager.Domain.Entities;
 
 namespace TaskManager.API.Controllers;
 

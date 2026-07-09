@@ -3,9 +3,9 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TaskManager.API.Application.DTOs;
-using TaskManager.API.Domain.Entities;
-using TaskManager.API.Infrastructure.Persistence;
+using TaskManager.Application.DTOs;
+using TaskManager.Domain.Entities;
+using TaskManager.Infrastructure.Persistence;
 
 namespace TaskManager.API.Controllers;
 

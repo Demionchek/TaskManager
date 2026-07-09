@@ -1,12 +1,10 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
-using TaskManager.API.Application.DTOs;
-using TaskManager.API.Domain.Entities;
-using TaskManager.API.Domain.Enums;
-using TaskManager.API.Infrastructure.Persistence;
+using TaskManager.Application.DTOs;
+using TaskManager.Domain.Entities;
+using TaskManager.Domain.Enums;
+using TaskManager.Infrastructure.Persistence;
 
 namespace TaskManager.API.Controllers;
 
