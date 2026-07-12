@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using TaskManager.Application.Common;
 using TaskManager.Application.Services;
 using TaskManager.Application.Settings;
 using TaskManager.Infrastructure.Persistence;
@@ -14,6 +15,8 @@ public static class ServiceExtensions
      public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
      {
           services.AddDbContext<AppDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+          services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+          services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IAppDbContext).Assembly));
           services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
           services.AddScoped<IJwtService, JwtService>();
           var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>()!;

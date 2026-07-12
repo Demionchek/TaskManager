@@ -1,107 +1,51 @@
-using System.Security.Claims;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
 using TaskManager.Application.DTOs;
-using TaskManager.Domain.Entities;
-using TaskManager.Infrastructure.Persistence;
+using TaskManager.Application.Features.Projects.Commands;
+using TaskManager.Application.Features.Projects.Queries;
 
 namespace TaskManager.API.Controllers;
 
 [Authorize]
 [ApiController]
 [Route("api/projects")]
-public class ProjectsController : ControllerBase
+public class ProjectsController(IMediator mediator) : BaseController
 {
-    private AppDbContext db;
-    public ProjectsController(AppDbContext db)
-    {
-        this.db = db;
-    }
-
     [HttpGet]
-    public async Task<ActionResult> Get()
+    public async Task<ActionResult> Get(CancellationToken ct)
     {
-        var projects = await GetProjectsByUserGuid();
-        List<ProjectResponse> responses = projects!.Select(p => new ProjectResponse(p))
-                                                  .ToList();
-        return Ok(responses);
+        var result = await mediator.Send( new GetProjectsQuery(GetUserId()), ct);
+        return Ok(result);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> Get(Guid id)
+    public async Task<ActionResult> Get(Guid id, CancellationToken ct)
     {
-        var project = await db.Projects
-                              .Where(p => p.Id == id && p.OwnerId == GetUserId())
-                              .FirstOrDefaultAsync();
-        if (project == null) return NotFound();
-        ProjectResponse? response = new ProjectResponse(project);
-        return Ok(response);
+        var result = await mediator.Send( new GetProjectByIdQuery(id, GetUserId()), ct);
+        if (result == null) return NotFound();
+        return Ok(result);
     }
 
     [HttpPost]
-    public async Task<ActionResult> Post(CreateProjectRequest request)
+    public async Task<ActionResult> Post(CreateProjectRequest request, CancellationToken ct)
     {
-        var userId = GetUserId();
-        User user = (await GetUserByGuid())!;
-        Project project = new Project {
-            Id = Guid.NewGuid(),
-            OwnerId = userId,
-            Owner = user,
-            CreatedAt = DateTime.UtcNow,
-            Name = request.Name,
-            Description = request.Description
-        };
-        user.Projects.Add(project);
-        db.Add(project);
-        await db.SaveChangesAsync();
-        ProjectResponse response = new ProjectResponse(project);
-
-        return CreatedAtAction(nameof(Get), new { id = project.Id }, response);
+        var result = await mediator.Send(new CreateProjectCommand(GetUserId(), request.Name, request.Description), ct);
+        return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Put(Guid id, UpdateProjectRequest request)
+    public async Task<ActionResult> Put(Guid id, UpdateProjectRequest request, CancellationToken ct)
     {
-        var project = await db.Projects.Where(p => p.Id == id).SingleOrDefaultAsync();
-        if (project == null) return NotFound();
-        if (project.OwnerId != GetUserId()) return Forbid();
-        project.Name = request.Name;
-        project.Description = request.Description;
-        ProjectResponse response = new ProjectResponse(project);
-        await db.SaveChangesAsync();
-        return Ok(response);
+        var result = await mediator.Send(new UpdateProjectCommand(id, GetUserId(), request.Name, request.Description), ct);
+        if (result == null) return NotFound();
+        return Ok(result);
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(Guid id)
+    public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
-        var project = await db.Projects.Where(p => p.Id == id).SingleOrDefaultAsync();
-        if (project == null) return NotFound();
-        if (project.OwnerId != GetUserId()) return Forbid();
-        db.Projects.Remove(project);
-        await db.SaveChangesAsync();
-        return NoContent();
-    }
-
-    private async Task<List<Project>?> GetProjectsByUserGuid()
-    {
-        var userId = GetUserId();
-        List<Project>? project = await db.Projects.Where(p => p.OwnerId == userId).ToListAsync();
-        return project;
-    }
-
-    private async Task<User?> GetUserByGuid()
-    {
-        var userId = GetUserId();
-        User? user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
-        return user;
-    }
-
-    private Guid GetUserId()
-    {
-        var userId = Guid.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
-        return userId;
+        var deleted = await mediator.Send(new DeleteProjectCommand(id, GetUserId()), ct);
+        return deleted ? NoContent() : NotFound();
     }
 }
