@@ -9,4 +9,6 @@ public class Comment
     public TaskItem? TaskItem { get; set; }
     public Guid AuthorId { get; set; }
     public User? Author { get; set; }
+
+    public bool IsAuthor(Guid userId) => AuthorId == userId;
 }

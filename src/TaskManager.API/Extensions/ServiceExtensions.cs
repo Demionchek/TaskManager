@@ -19,6 +19,7 @@ public static class ServiceExtensions
           services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IAppDbContext).Assembly));
           services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
           services.AddScoped<IJwtService, JwtService>();
+          services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
           var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
           services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
           {

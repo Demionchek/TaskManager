@@ -2,7 +2,6 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskManager.Application.Common;
 using TaskManager.Application.DTOs;
-using TaskManager.Domain.Entities;
 
 namespace TaskManager.Application.Features.Projects.Queries;
 

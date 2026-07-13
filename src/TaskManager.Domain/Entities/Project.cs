@@ -10,4 +10,8 @@ public class Project
     public User? Owner { get; set; }
     public List<TaskItem> Tasks { get; set; } = [];
     public List<ProjectMember> Members { get; set; } = [];
+    public bool IsOwner(Guid userId) => OwnerId == userId;
+
+    public bool HasAccess(Guid userId) =>
+        IsOwner(userId) || Members.Any(m => m.UserId == userId);
 }

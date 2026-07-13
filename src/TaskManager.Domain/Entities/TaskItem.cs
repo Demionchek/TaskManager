@@ -14,6 +14,5 @@ public class TaskItem
     public Project? Project { get; set; }
     public Guid? AssigneeId { get; set; }
     public User? Assignee { get; set; }
-    public List<Comment?> Comments { get; set; } = [];
-    public List<ProjectMember> Members { get; set; } = [];
+    public List<Comment> Comments { get; set; } = [];
 }
